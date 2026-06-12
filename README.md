@@ -15,3 +15,11 @@ An AI-based web application that detects emotions from text using IBM Watson Nat
 - HTML/CSS
 
 ## Project Structure
+
+## How to Run
+1. Install dependencies: `pip install ibm-watson flask`
+2. Run the app: `python server.py`
+3. Open browser at `http://127.0.0.1:5000`
+
+## Author
+Frank Glaesener
