@@ -1,34 +1,38 @@
-from ibm_watson import NaturalLanguageUnderstandingV1
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-from ibm_watson.natural_language_understanding_v1 import Features, EmotionOptions
+import requests
+import json
 
 def emotion_detector(text_to_analyze):
-    authenticator = IAMAuthenticator('Srs7YNk8MSMKBYrPOuynwfW6UfjQjx0oyQWnDv_Zq4G6')
+    url = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
     
-    nlu = NaturalLanguageUnderstandingV1(
-        version='2022-04-07',
-        authenticator=authenticator
-    )
+    headers = {
+        "Content-Type": "application/json"
+    }
     
-    nlu.set_service_url('https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/e69e66a9-4c1d-47c6-8606-ce1c7a076d76')
+    payload = {
+        "raw_document": {
+            "text": text_to_analyze
+        }
+    }
     
-    response = nlu.analyze(
-        text=text_to_analyze,
-        features=Features(emotion=EmotionOptions(document=True))
-    ).get_result()
+    response = requests.post(url, headers=headers, json=payload)
     
-    emotions = response['emotion']['document']['emotion']
+    if response.status_code != 200:
+        return {"error": f"Request failed with status {response.status_code}"}
     
-    result = {
-        'anger': emotions['anger'],
-        'disgust': emotions['disgust'],
-        'fear': emotions['fear'],
-        'joy': emotions['joy'],
-        'sadness': emotions['sadness'],
+    result = response.json()
+    
+    emotions = result['emotionPredictions'][0]['emotion']
+    
+    emotion_scores = {
+        'anger': emotions.get('anger', 0),
+        'disgust': emotions.get('disgust', 0),
+        'fear': emotions.get('fear', 0),
+        'joy': emotions.get('joy', 0),
+        'sadness': emotions.get('sadness', 0),
         'dominant_emotion': max(emotions, key=emotions.get)
     }
     
-    return result
+    return emotion_scores
 
 
 if __name__ == "__main__":
